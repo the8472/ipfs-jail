@@ -1,0 +1,51 @@
+*raw
+:PREROUTING ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+
+-N notrack_out
+-N notrack_in
+
+-I PREROUTING ! -i lo -j notrack_in
+-I OUTPUT ! -o lo -j notrack_out
+
+-I notrack_out -4 -d 192.168.0.0/16 -j RETURN
+-I notrack_out -4 -d 10.0.0.0/8     -j RETURN
+-I notrack_out -4 -d 172.16.0.0/12  -j RETURN
+-I notrack_out -6 -d fe80::/10 -j RETURN
+-I notrack_out -4 -j NOTRACK
+
+-I notrack_in -4 -s 192.168.0.0/16  -j RETURN
+-I notrack_in -4 -s 10.0.0.0/8      -j RETURN
+-I notrack_in -4 -s 172.16.0.0/12   -j RETURN
+-I notrack_in -6 -s fe80::/10 -j RETURN
+-I notrack_in -j NOTRACK
+
+-I PREROUTING -i lo -j NOTRACK
+-I OUTPUT -o lo -j NOTRACK
+
+COMMIT
+
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+
+
+## DHCP
+-A OUTPUT -p udp --dport 67:68 -j ACCEPT 
+
+## basic network functions 
+-A OUTPUT -4 -p icmp -j ACCEPT
+-A OUTPUT -6 -p icmpv6 -j ACCEPT
+-A OUTPUT -p igmp -j ACCEPT
+
+# block udp/tcp connection attempts *to* lan-local addresses.
+# that way we can still accept incoming connections from lan-local peers 
+#
+# note: doesn't block multicast
+-A OUTPUT -4 ! -o lo -d 192.168.0.0/16,10.0.0.0/8,172.16.0.0/12 -m state --state NEW,INVALID,UNTRACKED -j DROP
+-A OUTPUT -6 ! -o lo -d fe80::/10 -m state --state NEW,INVALID,UNTRACKED -j DROP
+
+
+COMMIT
+

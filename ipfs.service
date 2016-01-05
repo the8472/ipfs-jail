@@ -1,0 +1,14 @@
+[Unit]
+Description=IPFS
+After=network.target
+ 
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/local/bin/ipfs-jail
+
+
+ 
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,5 @@
+*filter
+
+-A OUTPUT -4 -p tcp --syn -j REJECT
+
+COMMIT

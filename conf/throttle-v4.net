@@ -1,0 +1,10 @@
+*filter
+
+-N syn_limit
+-A OUTPUT -4 -p tcp --syn -j syn_limit
+-A syn_limit -m limit --limit 30/minute --limit-burst 30 -j RETURN
+-A syn_limit -j REJECT
+
+
+COMMIT
+
