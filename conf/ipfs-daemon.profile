@@ -1,7 +1,7 @@
 include /etc/ipfs/jail/custom-blacklist.profile
 
 # noblacklist /sbin/dhclient
-blacklist /etc
+private-etc passwd,group
 blacklist /root
 blacklist /media
 # blacklist /sbin
