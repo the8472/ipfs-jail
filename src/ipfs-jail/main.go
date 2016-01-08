@@ -57,7 +57,7 @@ func (conf *Conf) populate() {
 		}
 	}
 
-	if binary, err := exec.LookPath("ipfs"); conf.Executable == "" && err != nil {
+	if binary, err := exec.LookPath("ipfs"); conf.Executable == "" && err == nil {
 		fmt.Println("binary from PATH")
 		conf.Executable = binary
 	}
@@ -107,7 +107,7 @@ func selfPath() string {
 
 func startSandbox() {
 	// "--profile=/etc/ipfs/jail/ipfs-daemon.profile", "--name="+jail_name, "--net="+dev, "--ip=none", "--private="+real_repo, "--env=IPFS_PATH="+user_home, "bash", "-c", "sleep inf ; "+binary+" daemon"
-	cmd := run("firejail", "--noprofile", "--net="+conf.HostDev, "--ip=none", "--name="+conf.JailName+"-outer", "--shell=bash",  selfPath(), "--nesting=configure-jail", "--user="+conf.User.Username, "--repo="+conf.RepoDir)
+	cmd := run("firejail", "--noprofile", "--net="+conf.HostDev, "--ip=none", "--name="+conf.JailName+"-outer", "--shell=none",  selfPath(), "--nesting=configure-jail", "--user="+conf.User.Username, "--repo="+conf.RepoDir)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Run()
@@ -141,7 +141,7 @@ func cleanupSandbox() {
 func startInnerSandbox()  {
 	uid, _ := strconv.Atoi(conf.User.Uid)
 	gid, _ := strconv.Atoi(conf.User.Gid)
-	cmd := run("firejail", "--force", "--profile=/etc/ipfs/jail/ipfs-daemon.profile", "--name="+conf.JailName, "--shell=bash", selfPath(), "--nesting=run-jailed", "--user="+conf.User.Username, "--repo="+conf.RepoDir)
+	cmd := run("firejail", "--force", "--profile=/etc/ipfs/jail/ipfs-daemon.profile", "--name="+conf.JailName, selfPath(), "--nesting=run-jailed", "--user="+conf.User.Username, "--repo="+conf.RepoDir)
 	cmd.SysProcAttr = &syscall.SysProcAttr{}
 	cmd.SysProcAttr.Credential = &syscall.Credential{Uid: uint32(uid), Gid: uint32(gid)}
 	cmd.Stdout = os.Stdout
